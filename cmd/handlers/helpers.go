@@ -9,6 +9,7 @@ import (
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
+// generateString генерирует случайную строку указанной длины
 func generateString(length int) string {
 	s := make([]rune, length)
 	for i := range s {
@@ -17,6 +18,7 @@ func generateString(length int) string {
 	return string(s)
 }
 
+// request делает запрос к хэндлеру без запуска сервера
 func request(method string, url string, body string, f func(http.ResponseWriter, *http.Request)) *http.Response {
 	r := httptest.NewRequest(method, url, bytes.NewReader([]byte(body)))
 	w := httptest.NewRecorder()
