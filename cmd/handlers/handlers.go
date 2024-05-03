@@ -1,8 +1,9 @@
-package main
+package handlers
 
 import (
 	"io"
 	"net/http"
+	"shortener/cmd/storage"
 )
 
 // PostUrl создает короткий адрес
@@ -22,7 +23,7 @@ func PostUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key := GenerateString(8)
-	urls[key] = string(url)
+	storage.Urls[key] = string(url)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(key))
 }
@@ -37,7 +38,7 @@ func GetUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.PathValue("id")
-	url, ok := urls[id]
+	url, ok := storage.Urls[id]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("Not Found"))

@@ -3,14 +3,13 @@ package main
 import (
 	"log"
 	"net/http"
+	"shortener/cmd/handlers"
 )
-
-var urls = make(map[string]string)
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", PostUrl)
-	mux.HandleFunc("/{id}", GetUrl)
+	mux.HandleFunc("/", handlers.PostUrl)
+	mux.HandleFunc("/{id}", handlers.GetUrl)
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		log.Fatalln(err)
