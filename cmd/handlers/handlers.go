@@ -22,7 +22,7 @@ func PostUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := GenerateString(8)
+	key := generateString(8)
 	storage.Urls[key] = string(url)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(key))
