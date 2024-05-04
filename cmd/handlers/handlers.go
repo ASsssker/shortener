@@ -8,13 +8,6 @@ import (
 
 // PostUrl создает короткий адрес
 func PostUrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte("Method Not Allowed"))
-		return
-	}
-
 	url, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -30,13 +23,6 @@ func PostUrl(w http.ResponseWriter, r *http.Request) {
 
 // GetUrl перенаправляет по адресу
 func GetUrl(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.Header().Set("Allow", http.MethodGet)
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte("Method Not Allowed"))
-		return
-	}
-
 	id := r.PathValue("id")
 	url, ok := storage.Urls[id]
 	if !ok {
