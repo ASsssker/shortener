@@ -5,11 +5,12 @@ import (
 	"shortener/cmd/handlers"
 )
 
-func getRoutes() *chi.Mux {
+func getRoutes(rootUrl string) *chi.Mux {
 	r := chi.NewRouter()
-
-	r.Post("/", handlers.PostUrl)
-	r.Get("/{id}", handlers.GetUrl)
+	r.Route(rootUrl, func(r chi.Router) {
+		r.Post("/", handlers.PostUrl)
+		r.Get("/{id}", handlers.GetUrl)
+	})
 
 	return r
 }
