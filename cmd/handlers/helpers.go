@@ -19,7 +19,7 @@ func generateString(length int) string {
 	return string(s)
 }
 
-// request делает запрос к хэндлеру без запуска сервера
+// runHandler делает запрос к хэндлеру без запуска сервера
 func runHandler(method string, url string, body string, f func(http.ResponseWriter, *http.Request)) *http.Response {
 	r := httptest.NewRequest(method, url, bytes.NewReader([]byte(body)))
 	w := httptest.NewRecorder()
