@@ -11,6 +11,5 @@ func getRoutes(rootUrl string) *chi.Mux {
 		r.Post("/", handlers.PostUrl)
 		r.Get("/{id}", handlers.GetUrl)
 	})
-
 	return r
 }

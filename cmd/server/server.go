@@ -1,19 +1,19 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net/http"
 )
 
 func main() {
-	config := &Config{}
-	config.serverAddr = flag.String("a", ":8080", "server listen address")
-	config.rootUrl = flag.String("b", "/", "root url")
-	flag.Parse()
+	cfg, err := getConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	router := getRoutes(*config.rootUrl)
-	err := http.ListenAndServe(*config.serverAddr, router)
+	router := getRoutes(cfg.RootUrl)
+	log.Printf("Starting server on %s\n", cfg.ServerAddr)
+	err = http.ListenAndServe(cfg.ServerAddr, router)
 	if err != nil {
 		log.Fatalln(err)
 	}
