@@ -2,8 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"github.com/caarlos0/env/v11"
+	"os"
 )
 
 // config структура для хранения параметров запуска
@@ -14,27 +13,15 @@ type config struct {
 
 // parseConfig парсит конфигурационные параметры со следующим приоритетом:
 // env > cli option
-func getConfig() (*config, error) {
-	var cfg config
-	var requireParse = false
+func (c *config) parseConfig() {
+	flag.StringVar(&c.ServerAddr, "a", ":8080", "server listen address")
+	flag.StringVar(&c.RootUrl, "b", "/", "root url")
+	flag.Parse()
 
-	err := env.Parse(&cfg)
-	if err != nil {
-		return nil, err
+	if runServerAddr := os.Getenv("SERVER_ADDRESS"); runServerAddr != "" {
+		c.ServerAddr = runServerAddr
 	}
-	fmt.Println(cfg)
-
-	if cfg.ServerAddr == "" {
-		requireParse = true
-		flag.StringVar(&cfg.ServerAddr, "a", ":8080", "server listen address")
+	if runRootUrl := os.Getenv("BASE_URL"); runRootUrl != "" {
+		c.RootUrl = runRootUrl
 	}
-	if cfg.RootUrl == "" {
-		requireParse = true
-		flag.StringVar(&cfg.RootUrl, "b", "/", "root url")
-	}
-	if requireParse {
-		flag.Parse()
-	}
-
-	return &cfg, nil
 }

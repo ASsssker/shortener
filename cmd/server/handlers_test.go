@@ -1,4 +1,4 @@
-package handlers
+package main
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -26,7 +26,8 @@ type test struct {
 }
 
 func TestPostUrl(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(PostUrl))
+	app := &Application{}
+	srv := httptest.NewServer(http.HandlerFunc(app.PostUrl))
 	testCases := []test{
 		{
 			name: "Post method test #1",
@@ -53,7 +54,8 @@ func TestPostUrl(t *testing.T) {
 }
 
 func TestIncorrectRequestGetUrl(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(GetUrl))
+	app := &Application{}
+	srv := httptest.NewServer(http.HandlerFunc(app.GetUrl))
 	testCases := []test{
 		{
 			name: "Invalid url test #1",
@@ -78,7 +80,8 @@ func TestIncorrectRequestGetUrl(t *testing.T) {
 }
 
 func TestCorrectRequestGetUrl(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(GetUrl))
+	app := &Application{}
+	srv := httptest.NewServer(http.HandlerFunc(app.GetUrl))
 	testCases := []test{
 		{
 			name: "Test #1",

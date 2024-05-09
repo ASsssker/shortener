@@ -5,15 +5,16 @@ import (
 	"net/http"
 )
 
-func main() {
-	cfg, err := getConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
+type Application struct {
+	config
+}
 
-	router := getRoutes(cfg.RootUrl)
-	log.Printf("Starting server on %s\n", cfg.ServerAddr)
-	err = http.ListenAndServe(cfg.ServerAddr, router)
+func main() {
+	app := &Application{}
+	app.parseConfig()
+
+	log.Printf("Starting server on %s\n", app.ServerAddr)
+	err := http.ListenAndServe(app.ServerAddr, app.getRoutes())
 	if err != nil {
 		log.Fatalln(err)
 	}

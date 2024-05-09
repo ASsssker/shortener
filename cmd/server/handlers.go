@@ -1,4 +1,4 @@
-package handlers
+package main
 
 import (
 	"io"
@@ -7,7 +7,7 @@ import (
 )
 
 // PostUrl создает короткий адрес
-func PostUrl(w http.ResponseWriter, r *http.Request) {
+func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 	url, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -22,7 +22,7 @@ func PostUrl(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetUrl перенаправляет по адресу
-func GetUrl(w http.ResponseWriter, r *http.Request) {
+func (app *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	url, ok := storage.Urls[id]
 	if !ok {
