@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// RequestsInfo логгирует информацию о запросе
+// RequestsInfo логирует информацию о запросе
 func (a *Application) RequestsInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		lrw := &loggingResponseWriter{
