@@ -18,7 +18,7 @@ func main() {
 	}
 	app.parseConfig()
 
-	log.Printf("Starting server on %s\n", app.ServerAddr)
+	app.InfoLog.Printf("Starting server on %s\n", app.ServerAddr)
 	err := http.ListenAndServe(app.ServerAddr, app.getRoutes())
 	if err != nil {
 		log.Fatalln(err)
