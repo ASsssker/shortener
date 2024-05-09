@@ -22,7 +22,7 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetUrl перенаправляет по адресу
-func (app *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
+func (a *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	url, ok := storage.Urls[id]
 	if !ok {
