@@ -1,16 +1,21 @@
 package main
 
 import (
+	"github.com/fatih/color"
 	"log"
 	"net/http"
+	"shortener/internal/logger"
 )
 
 type Application struct {
 	config
+	InfoLog *log.Logger
 }
 
 func main() {
-	app := &Application{}
+	app := &Application{
+		InfoLog: logger.CreateLogger("INFO", color.FgGreen),
+	}
 	app.parseConfig()
 
 	log.Printf("Starting server on %s\n", app.ServerAddr)
