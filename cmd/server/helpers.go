@@ -28,10 +28,11 @@ func runHandler(method string, url string, body string, f func(http.ResponseWrit
 }
 
 // testRequest делает запрос хэндлеру через сервер
-func testRequest(srv *httptest.Server, method string) (*resty.Response, error) {
+func testRequest(srv *httptest.Server, method string, body string) (*resty.Response, error) {
 	req := resty.New().R()
 	req.Method = method
 	req.URL = srv.URL
+	req.Body = body
 	resp, err := req.Send()
 	return resp, err
 }

@@ -33,7 +33,7 @@ func TestPostUrl(t *testing.T) {
 			name: "Post method test #1",
 			value: testData{
 				url:    "/",
-				body:   "https://go.dev/",
+				body:   "{\"url\":\"https://go.dev/\"}",
 				method: http.MethodPost,
 			},
 			want: expect{
@@ -44,9 +44,9 @@ func TestPostUrl(t *testing.T) {
 	}
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			res, err := testRequest(srv, test.value.method)
+			res, err := testRequest(srv, test.value.method, test.value.body)
 			require.NoError(t, err)
-			assert.Equal(t, test.want.status, res.StatusCode(), "Expected status code %d, got %d", test.want.status, res.StatusCode)
+			assert.Equal(t, test.want.status, res.StatusCode(), "Expected status code %d, got %d", test.want.status, res.StatusCode())
 			require.NoError(t, err)
 			assert.NotEmpty(t, res.Body(), "Response body is empty")
 		})
@@ -70,9 +70,9 @@ func TestIncorrectRequestGetUrl(t *testing.T) {
 	}
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			res, err := testRequest(srv, test.value.method)
+			res, err := testRequest(srv, test.value.method, test.value.body)
 			require.NoError(t, err)
-			assert.Equal(t, test.want.status, res.StatusCode(), "Expected status code %d, got %d", test.want.status, res.StatusCode)
+			assert.Equal(t, test.want.status, res.StatusCode(), "Expected status code %d, got %d", test.want.status, res.StatusCode())
 			require.NoError(t, err)
 			assert.NotEmpty(t, res.Body(), "Response body is empty")
 		})
@@ -97,9 +97,9 @@ func TestCorrectRequestGetUrl(t *testing.T) {
 	}
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			res, err := testRequest(srv, test.value.method)
+			res, err := testRequest(srv, test.value.method, test.value.body)
 			require.NoError(t, err)
-			assert.Equal(t, test.want.status, res.StatusCode(), "Expected status code %d, got %d", test.want.status, res.StatusCode)
+			assert.Equal(t, test.want.status, res.StatusCode(), "Expected status code %d, got %d", test.want.status, res.StatusCode())
 			require.NoError(t, err)
 			assert.NotEmpty(t, res.Body(), "Response body is empty")
 		})
