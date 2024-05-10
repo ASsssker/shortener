@@ -1,24 +1,38 @@
 package main
 
 import (
-	"io"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"shortener/cmd/storage"
+	"shortener/internal/models"
 )
 
 // PostUrl создает короткий адрес
 func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
-	url, err := io.ReadAll(r.Body)
-	if err != nil {
+	reqData := &models.RequestDataModels{}
+
+	if err := json.NewDecoder(r.Body).Decode(reqData); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
 		return
 	}
 
 	key := generateString(8)
-	storage.Urls[key] = string(url)
+	storage.Urls[key] = reqData.Url
+
+	respData := &models.UrlResponseModels{
+		ResultUrl: a.ServerAddr + a.RootUrl + key,
+	}
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(respData); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(key))
+	w.Write(buf.Bytes())
 }
 
 // GetUrl перенаправляет по адресу

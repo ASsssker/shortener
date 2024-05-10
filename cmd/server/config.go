@@ -14,7 +14,7 @@ type config struct {
 // parseConfig парсит конфигурационные параметры со следующим приоритетом:
 // env > cli option
 func (c *config) parseConfig() {
-	flag.StringVar(&c.ServerAddr, "a", ":8080", "server listen address")
+	flag.StringVar(&c.ServerAddr, "a", "localhost:8080", "server listen address")
 	flag.StringVar(&c.RootUrl, "b", "/", "root url")
 	flag.Parse()
 
