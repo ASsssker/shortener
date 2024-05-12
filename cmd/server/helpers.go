@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"github.com/go-resty/resty/v2"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"shortener/cmd/storage"
 )
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -35,4 +37,13 @@ func testRequest(srv *httptest.Server, method string, body string) (*resty.Respo
 	req.Body = body
 	resp, err := req.Send()
 	return resp, err
+}
+
+func getTestApp() *Application {
+	db, err := storage.GetDB("")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &Application{db: db}
 }

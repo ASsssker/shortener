@@ -26,7 +26,7 @@ type test struct {
 }
 
 func TestPostUrl(t *testing.T) {
-	app := &Application{}
+	app := getTestApp()
 	srv := httptest.NewServer(http.HandlerFunc(app.PostUrl))
 	testCases := []test{
 		{
@@ -54,7 +54,7 @@ func TestPostUrl(t *testing.T) {
 }
 
 func TestIncorrectRequestGetUrl(t *testing.T) {
-	app := &Application{}
+	app := getTestApp()
 	srv := httptest.NewServer(http.HandlerFunc(app.GetUrl))
 	testCases := []test{
 		{
@@ -80,7 +80,7 @@ func TestIncorrectRequestGetUrl(t *testing.T) {
 }
 
 func TestCorrectRequestGetUrl(t *testing.T) {
-	app := &Application{}
+	app := getTestApp()
 	srv := httptest.NewServer(http.HandlerFunc(app.GetUrl))
 	testCases := []test{
 		{

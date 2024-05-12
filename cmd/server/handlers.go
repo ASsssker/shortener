@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"shortener/cmd/storage"
 	"shortener/internal/models"
 )
 
@@ -19,7 +18,8 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key := generateString(8)
-	storage.Urls[key] = reqData.Url
+	a.db.Urls[key] = reqData.Url
+	a.db.UpdateFile()
 
 	respData := &models.UrlResponseModels{
 		ResultUrl: a.ServerAddr + a.RootUrl + key,
@@ -39,7 +39,7 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 // GetUrl перенаправляет по адресу
 func (a *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	url, ok := storage.Urls[id]
+	url, ok := a.db.Urls[id]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("Not Found"))
