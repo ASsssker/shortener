@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"shortener/internal/models"
+	"time"
 )
 
 // PostUrl создает короткий адрес
@@ -47,4 +49,18 @@ func (a *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+}
+
+func (a *Application) PingDB(w http.ResponseWriter, r *http.Request) {
+	timeOut, _ := context.WithTimeout(context.Background(), time.Second)
+	// Если во время выполнения истечет контекст, функция вернет ошибку
+	err := a.pgDB.Ping(timeOut)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("PONG"))
 }

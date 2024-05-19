@@ -29,7 +29,7 @@ func runHandler(method string, url string, body string, f func(http.ResponseWrit
 	return w.Result()
 }
 
-// testRequest делает запрос хэндлеру через сервер
+// testRequest делает запрос к хэндлеру через сервер
 func testRequest(srv *httptest.Server, method string, body string) (*resty.Response, error) {
 	req := resty.New().R()
 	req.Method = method

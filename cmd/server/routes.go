@@ -11,6 +11,8 @@ func (a *Application) getRoutes() *chi.Mux {
 	r.Route(a.RootUrl, func(r chi.Router) {
 		r.Post("/", a.PostUrl)
 		r.Get("/{id}", a.GetUrl)
+
+		r.Get("/ping", a.PingDB)
 	})
 	return r
 }
