@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 )
@@ -36,8 +37,21 @@ func (f *FileDB) Close() error {
 	return f.file.Close()
 }
 
-// UpdateFile синхронизирует данные в мапе и файле
-func (f *FileDB) UpdateFile() error {
+func (f *FileDB) Get(key string) (string, bool) {
+	value, exitsts := f.Urls[key]
+	if !exitsts {
+		return "", false
+	}
+	return value, true
+}
+
+// Insert добавляет запись в мапу и файл
+func (f *FileDB) Insert(key, value string) error {
+	if _, exists := f.Urls[key]; exists {
+		return errors.New("key already exists")
+	}
+	f.Urls[key] = value
+
 	if f.file != nil {
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(f.Urls); err != nil {

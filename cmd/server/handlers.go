@@ -2,11 +2,9 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"shortener/internal/models"
-	"time"
 )
 
 // PostUrl создает короткий адрес
@@ -20,8 +18,11 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key := generateString(8)
-	a.db.Urls[key] = reqData.Url
-	a.db.UpdateFile()
+	if err := a.FileDB.Insert(key, reqData.Url); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
 
 	respData := &models.UrlResponseModels{
 		ResultUrl: a.ServerAddr + a.RootUrl + key,
@@ -41,7 +42,7 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 // GetUrl перенаправляет по адресу
 func (a *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	url, ok := a.db.Urls[id]
+	url, ok := a.FileDB.Get(id)
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("Not Found"))
@@ -52,10 +53,7 @@ func (a *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Application) PingDB(w http.ResponseWriter, r *http.Request) {
-	timeOut, _ := context.WithTimeout(context.Background(), time.Second)
-	// Если во время выполнения истечет контекст, функция вернет ошибку
-	err := a.pgDB.Ping(timeOut)
-	if err != nil {
+	if a.pgDB == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
 		return

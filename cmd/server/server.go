@@ -1,9 +1,9 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"github.com/fatih/color"
-	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
 	"shortener/cmd/storage"
@@ -12,8 +12,8 @@ import (
 
 type Application struct {
 	config
-	pgDB     *pgxpool.Pool
-	db       *storage.FileDB
+	pgDB     *sql.DB
+	FileDB   *storage.FileDB
 	InfoLog  *log.Logger
 	ErrorLog *log.Logger
 }
@@ -27,17 +27,21 @@ func main() {
 	}
 	app.parseConfig()
 
-	app.pgDB, _ = OpenDB(app.DatabaseDSN)
-	//if err != nil {
-	//	app.ErrorLog.Fatal(err)
-	//}
+	app.pgDB, err = OpenDB("pgx", app.DatabaseDSN)
+	if err != nil {
+		app.FileDB, err = storage.GetDB(app.config.FileStoragePath)
+		if err != nil {
+			app.ErrorLog.Fatal(err)
+		}
+		defer app.FileDB.Close()
+	}
 	defer app.pgDB.Close()
 
-	app.db, err = storage.GetDB(app.config.FileStoragePath)
+	app.FileDB, err = storage.GetDB(app.config.FileStoragePath)
 	if err != nil {
 		app.ErrorLog.Fatal(err)
 	}
-	defer app.db.Close()
+	defer app.FileDB.Close()
 
 	app.InfoLog.Printf("Starting server on %s\n", app.ServerAddr)
 	err = http.ListenAndServe(app.ServerAddr, app.getRoutes())
@@ -46,10 +50,13 @@ func main() {
 	}
 }
 
-func OpenDB(dataSourceName string) (*pgxpool.Pool, error) {
-	dbPool, err := pgxpool.New(context.TODO(), dataSourceName)
+func OpenDB(driver, dataSourceName string) (*sql.DB, error) {
+	db, err := sql.Open(driver, dataSourceName)
 	if err != nil {
 		return nil, err
 	}
-	return dbPool, nil
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }

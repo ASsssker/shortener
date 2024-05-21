@@ -45,5 +45,5 @@ func getTestApp() *Application {
 		log.Fatal(err)
 	}
 
-	return &Application{db: db}
+	return &Application{FileDB: db}
 }
