@@ -1,4 +1,4 @@
-package storage
+package file
 
 import (
 	"bytes"
@@ -37,18 +37,18 @@ func (f *FileDB) Close() error {
 	return f.file.Close()
 }
 
-func (f *FileDB) Get(key string) (string, bool) {
+func (f *FileDB) Get(key string) (string, error) {
 	value, exitsts := f.Urls[key]
 	if !exitsts {
-		return "", false
+		return "", errors.New("url not found")
 	}
-	return value, true
+	return value, nil
 }
 
 // Insert добавляет запись в мапу и файл
 func (f *FileDB) Insert(key, value string) error {
 	if _, exists := f.Urls[key]; exists {
-		return errors.New("key already exists")
+		return errors.New("url already exists")
 	}
 	f.Urls[key] = value
 

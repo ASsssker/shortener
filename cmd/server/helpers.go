@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
-	"shortener/cmd/storage"
+	"shortener/cmd/storage/file"
 )
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -40,10 +40,10 @@ func testRequest(srv *httptest.Server, method string, body string) (*resty.Respo
 }
 
 func getTestApp() *Application {
-	db, err := storage.GetDB("")
+	db, err := file.GetDB("")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return &Application{FileDB: db}
+	return &Application{DB: db}
 }

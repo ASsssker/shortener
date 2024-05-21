@@ -12,13 +12,15 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 	reqData := &models.RequestDataModels{}
 
 	if err := json.NewDecoder(r.Body).Decode(reqData); err != nil {
+		a.ErrorLog.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
 		return
 	}
 
 	key := generateString(8)
-	if err := a.FileDB.Insert(key, reqData.Url); err != nil {
+	if err := a.DB.Insert(key, reqData.Url); err != nil {
+		a.ErrorLog.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
 		return
@@ -29,6 +31,7 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 	}
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(respData); err != nil {
+		a.ErrorLog.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
 		return
@@ -42,18 +45,24 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 // GetUrl перенаправляет по адресу
 func (a *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	url, ok := a.FileDB.Get(id)
-	if !ok {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Not Found"))
+	url, err := a.DB.Get(id)
+	if err != nil {
+		a.ErrorLog.Println(err)
+		if err.Error() == "url not found" {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("Not Found"))
+			return
+		}
+		a.ErrorLog.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
 		return
 	}
-
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func (a *Application) PingDB(w http.ResponseWriter, r *http.Request) {
-	if a.pgDB == nil {
+	if a.DB == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
 		return
