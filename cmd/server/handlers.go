@@ -42,6 +42,41 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 	w.Write(buf.Bytes())
 }
 
+func (a *Application) PostBatchUrl(w http.ResponseWriter, r *http.Request) {
+	reqData := make([]models.BatchRequestModel, 10)
+
+	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
+		a.ErrorLog.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
+	respData := make([]models.BatchResponseModel, len(reqData))
+
+	for idx := range reqData {
+		if err := a.DB.Insert(reqData[idx].CorrelationId, reqData[idx].OriginalUrl); err != nil {
+			a.ErrorLog.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Internal Server Error"))
+			return
+		}
+		respData[idx].CorrelationId = reqData[idx].CorrelationId
+		respData[idx].ShortUrl = a.ServerAddr + a.RootUrl + reqData[idx].CorrelationId
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(respData); err != nil {
+		a.ErrorLog.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(buf.Bytes())
+}
+
 // GetUrl перенаправляет по адресу
 func (a *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")

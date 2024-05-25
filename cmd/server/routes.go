@@ -12,6 +12,7 @@ func (a *Application) getRoutes() *chi.Mux {
 		r.Post("/", a.PostUrl)
 		r.Get("/{id}", a.GetUrl)
 
+		r.Post("/api/shortener/batch", a.PostBatchUrl)
 		r.Get("/ping", a.PingDB)
 	})
 	return r
