@@ -7,7 +7,7 @@ import (
 )
 
 // CreateLogger создает логгер с заданными параметрами:
-func CreateLogger(logMessage string, messageColor color.Attribute, flag int) *log.Logger {
+func CreateLogger(logMessage string, messageColor color.Attribute, flag int, file *os.File) *log.Logger {
 	if logMessage == "" {
 		log.Fatalln("No log message provided")
 	}
@@ -15,5 +15,9 @@ func CreateLogger(logMessage string, messageColor color.Attribute, flag int) *lo
 		messageColor = color.FgGreen
 	}
 	message := color.New(messageColor).Sprintf("%s \t", logMessage)
-	return log.New(os.Stdout, message, flag)
+	if file == nil {
+		file = os.Stdout
+	}
+
+	return log.New(file, message, flag)
 }

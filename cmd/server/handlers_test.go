@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type testData struct {
@@ -28,6 +29,7 @@ type test struct {
 func TestPostUrl(t *testing.T) {
 	app := getTestApp()
 	srv := httptest.NewServer(http.HandlerFunc(app.PostUrl))
+	defer srv.Close()
 	testCases := []test{
 		{
 			name: "Post method test #1",
@@ -56,6 +58,7 @@ func TestPostUrl(t *testing.T) {
 func TestIncorrectRequestGetUrl(t *testing.T) {
 	app := getTestApp()
 	srv := httptest.NewServer(http.HandlerFunc(app.GetUrl))
+	defer srv.Close()
 	testCases := []test{
 		{
 			name: "Invalid url test #1",
@@ -82,6 +85,7 @@ func TestIncorrectRequestGetUrl(t *testing.T) {
 func TestCorrectRequestGetUrl(t *testing.T) {
 	app := getTestApp()
 	srv := httptest.NewServer(http.HandlerFunc(app.GetUrl))
+	defer srv.Close()
 	testCases := []test{
 		{
 			name: "Test #1",

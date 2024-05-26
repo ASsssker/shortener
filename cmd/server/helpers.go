@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bytes"
-	"github.com/go-resty/resty/v2"
-	"log"
+	"fmt"
 	"math/rand"
 	"net/http"
-	"net/http/httptest"
-	"shortener/cmd/storage/file"
+	"runtime/debug"
 )
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -21,29 +18,16 @@ func generateString(length int) string {
 	return string(s)
 }
 
-// runHandler делает запрос к хэндлеру без запуска сервера
-func runHandler(method string, url string, body string, f func(http.ResponseWriter, *http.Request)) *http.Response {
-	r := httptest.NewRequest(method, url, bytes.NewReader([]byte(body)))
-	w := httptest.NewRecorder()
-	f(w, r)
-	return w.Result()
+func (app *Application) serverError(w http.ResponseWriter, err error) {
+	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
+	app.ErrorLog.Output(2, trace)
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-// testRequest делает запрос к хэндлеру через сервер
-func testRequest(srv *httptest.Server, method string, body string) (*resty.Response, error) {
-	req := resty.New().R()
-	req.Method = method
-	req.URL = srv.URL
-	req.Body = body
-	resp, err := req.Send()
-	return resp, err
+func (app *Application) clientError(w http.ResponseWriter, status int) {
+	http.Error(w, http.StatusText(status), status)
 }
 
-func getTestApp() *Application {
-	db, err := file.GetDB("")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return &Application{DB: db}
+func (app *Application) notFound(w http.ResponseWriter) {
+	app.clientError(w, http.StatusNotFound)
 }
