@@ -3,12 +3,15 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"shortener/internal/models"
+	"shortener/internal/storage"
 )
 
 // PostUrl создает короткий адрес
 func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
+	respStatus := http.StatusCreated
 	reqData := &models.RequestDataModels{}
 
 	if err := json.NewDecoder(r.Body).Decode(reqData); err != nil {
@@ -17,11 +20,15 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key := generateString(8)
-	if err := a.DB.Insert(key, reqData.Url); err != nil {
+	k, _, existings, err := a.DB.Insert(key, reqData.Url);
+	if err != nil {
 		a.serverError(w, err)
 		return
 	}
-
+	if existings {
+		key = k
+		respStatus = http.StatusConflict
+	}
 	respData := &models.UrlResponseModels{
 		ResultUrl: a.ServerAddr + a.RootUrl + key,
 	}
@@ -32,12 +39,13 @@ func (a *Application) PostUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(respStatus)
 	w.Write(buf.Bytes())
 }
 
 // PostBatchUrl создает короткий адрес для батча адресов
 func (a *Application) PostBatchUrl(w http.ResponseWriter, r *http.Request) {
+	respStatus := http.StatusCreated
 	reqData := make([]models.BatchRequestModel, 10)
 
 	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
@@ -48,9 +56,14 @@ func (a *Application) PostBatchUrl(w http.ResponseWriter, r *http.Request) {
 
 	for idx := range reqData {
 		key := generateString(8)
-		if err := a.DB.Insert(key, reqData[idx].OriginalUrl); err != nil {
+		k, _, existings, err := a.DB.Insert(key, reqData[idx].OriginalUrl)
+		if  err != nil {
 			a.serverError(w, err)
 			return
+		}
+		if existings {
+			key = k
+			respStatus = http.StatusConflict
 		}
 		respData[idx].CorrelationId = reqData[idx].CorrelationId
 		respData[idx].ShortUrl = a.ServerAddr + a.RootUrl + key
@@ -63,7 +76,7 @@ func (a *Application) PostBatchUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(respStatus)
 	w.Write(buf.Bytes())
 }
 
@@ -72,7 +85,7 @@ func (a *Application) GetUrl(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	url, err := a.DB.Get(id)
 	if err != nil {
-		if err.Error() == "url not found" {
+		if errors.Is(err, storage.ErrNoRecord) {
 			a.notFound(w)
 			return
 		}

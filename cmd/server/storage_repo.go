@@ -1,14 +1,14 @@
 package main
 
 import (
-	"errors"
+	"shortener/internal/storage"
 	"shortener/internal/storage/db"
 	"shortener/internal/storage/file"
 )
 
 type storageRepo interface {
 	Get(key string) (string, error)
-	Insert(key, value string) error
+	Insert(key, value string) (string, string, bool, error)
 	Close() error
 }
 
@@ -42,17 +42,20 @@ type Urls map[string]string
 func (u Urls) Get(key string) (string, error) {
 	value, exists := u[key]
 	if !exists {
-		return "", errors.New("url not found")
+		return "", storage.ErrNoRecord
 	}
 	return value, nil
 }
 
-func (u Urls) Insert(key, value string) error {
-	_, exists := u[key]
-	if exists {
-		return errors.New("url already exists")
+func (u Urls) Insert(key, value string) (string, string, bool, error) {
+	for k, v := range u {
+		if value == v {
+			return k, v, true, nil
+		}
 	}
-	return nil
+	
+	u[key] = value
+	return key, value, false, nil
 }
 
 func (u Urls) Close() error {

@@ -3,8 +3,10 @@ package db
 import (
 	"database/sql"
 	"errors"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"shortener/internal/storage"
 	"time"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type Url struct {
@@ -52,21 +54,39 @@ func (m *UrlModel) Get(key string) (string, error) {
 	err := m.DB.QueryRow(stmt, key).Scan(&u.ID, &u.Url, &u.Key, &u.Created)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", errors.New("url not found")
+			return "", storage.ErrNoRecord
 		}
 		return "", err
 	}
 	return u.Url, nil
 }
 
-func (m *UrlModel) Insert(key string, url string) error {
+func (m *UrlModel) Insert(key string, url string) (string, string, bool ,error) {
 	stmt := `INSERT INTO urls (keys, url, created) VALUES ($1, $2, $3)`
 
-	_, err := m.DB.Exec(stmt, key, url, time.Now())
-	if err != nil {
-		return err
+	u, exists := m.checkExists(url)
+	if !exists {
+		_, err := m.DB.Exec(stmt, key, url, time.Now())
+		if err != nil {
+			return "", "", false, err
+		}
+	} else {
+		key = u.Key
 	}
-	return nil
+	return key, url, exists, nil
+}
+
+func (m *UrlModel) checkExists(url string) (*Url, bool) {
+	stmt := "SELECT id, url, keys, created FROM urls WHERE url = $1"
+
+	u := &Url{}
+	err := m.DB.QueryRow(stmt, url).Scan(&u.ID, &u.Url, &u.Key, &u.Created)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return u, false
+		}
+	}
+	return u, true
 }
 
 func (m *UrlModel) Close() error {

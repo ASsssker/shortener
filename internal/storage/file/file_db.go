@@ -3,9 +3,9 @@ package file
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 	"os"
+	"shortener/internal/storage"
 )
 
 type Urls map[string]string
@@ -40,29 +40,31 @@ func (f *FileDB) Close() error {
 func (f *FileDB) Get(key string) (string, error) {
 	value, exitsts := f.Urls[key]
 	if !exitsts {
-		return "", errors.New("url not found")
+		return "", storage.ErrNoRecord
 	}
 	return value, nil
 }
 
 // Insert добавляет запись в мапу и файл
-func (f *FileDB) Insert(key, value string) error {
-	if _, exists := f.Urls[key]; exists {
-		return errors.New("url already exists")
+func (f *FileDB) Insert(key, value string) (string, string, bool, error) {
+	for k, v := range f.Urls {
+		if value == v {
+			return k, v, true, nil
+		}
 	}
-	f.Urls[key] = value
 
+	f.Urls[key] = value
 	if f.file != nil {
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(f.Urls); err != nil {
-			return err
+			return "", "", false, err
 		}
 		if err := f.file.Truncate(0); err != nil {
-			return err
+			return "", "", false, err
 		}
 		if _, err := f.file.Write(buf.Bytes()); err != nil {
-			return err
+			return "", "", false, err
 		}
 	}
-	return nil
+	return key, value, false, nil
 }
