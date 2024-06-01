@@ -35,8 +35,11 @@ func NewUrlModel(driver, dataSourceName string) (*UrlModel, error) {
 
 func (m *UrlModel) initTable() error {
 	stmt := "CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, keys TEXT NOT NULL, url TEXT NOT NULL, created TIMESTAMP NOT NULL)"
-	_, err := m.DB.Exec(stmt)
-	if err != nil {
+	stmtCreateIdx := "CREATE INDEX IF NOT EXISTS idx_url ON urls(url)"
+	if _, err := m.DB.Exec(stmt); err != nil {
+		return err
+	}
+	if _, err := m.DB.Exec(stmtCreateIdx); err != nil {
 		return err
 	}
 	return nil
