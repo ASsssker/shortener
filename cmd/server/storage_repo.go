@@ -16,14 +16,14 @@ type storageRepo interface {
 func (app *Application) connectToStorage() {
 	var storage storageRepo
 	var err error
-	if storage, err := db.NewUrlModel("pgx", app.DatabaseDSN); err == nil {
+	if storage, err = db.NewUrlModel("pgx", app.DatabaseDSN); err == nil {
 		app.DB = storage
 		app.InfoLog.Print("Connected to Postgres")
 		return
 	}
 	app.ErrorLog.Print(err)
 
-	if storage, err := file.GetDB(app.FileStoragePath); err == nil {
+	if storage, err = file.GetDB(app.FileStoragePath); err == nil {
 		app.DB = storage
 		app.InfoLog.Print("Connected to file storage")
 		return
